@@ -13,11 +13,10 @@ pipeline {
             }
         }
         stage('Test') {
-            steps {
-                // 방금 옮긴 jar 파일을 직접 지정하여 테스트 실행
-                sh 'java -cp classes:junit-platform-console-standalone-1.7.1.jar org.junit.platform.console.ConsoleLauncher --scan-classpath > test_results.txt'
-            }
-        }
+    	    steps {
+        	sh 'java -cp .:junit-platform-console-standalone-5.10.2.jar org.junit.platform.console.ConsoleLauncher --scan-classpath > test_results.txt'
+    	    }
+	}
     }
     post {
         always {
