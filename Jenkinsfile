@@ -1,38 +1,77 @@
 pipeline {
-    agent any
-    
-    stages {
-        stage('Checkout') {
-            steps {
-                // 1. 깃허브에서 소스코드 가져오기
-                checkout scm
-            }
-        }
-        
-        stage('Build') {
-            steps {
-                echo 'Compiling...'
-                // 2. 테스트 파일을 제외하고 오직 핵심 코드만 컴파일
-                // -d classes: 컴파일된 파일을 classes 폴더에 저장
-                sh 'javac -encoding UTF-8 -d classes studentManager/src/student/StudentManager.java studentManager/src/student/branchTest.java'
-                echo 'Build Success!'
-            }
-        }
-        
-        stage('Test-Placeholder') {
-            steps {
-                // 3. 테스트 단계는 에러 방지를 위해 간단한 메시지만 출력
-                echo 'Testing step skipped to prevent build failure.'
-            }
+agent any
+
+```
+environment {
+    JUNIT_JAR_URL = 'https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console-standalone/1.10.2/junit-platform-console-standalone-1.10.2.jar'
+    JUNIT_JAR_PATH = 'lib/junit.jar'
+    CLASS_DIR = 'classes'
+    REPORT_DIR = 'test-reports'
+}
+
+stages {
+    stage('Checkout') {
+        steps {
+            checkout scm
         }
     }
-    
-    post {
-        success {
-            echo '모든 빌드 과정이 성공적으로 완료되었습니다!'
-        }
-        failure {
-            echo '빌드 중 오류가 발생했습니다. 로그를 확인하세요.'
+
+    stage('Prepare') {
+        steps {
+            sh '''
+                mkdir -p ${CLASS_DIR}
+                mkdir -p ${REPORT_DIR}
+                mkdir -p lib
+
+                echo "[+] Downloading JUnit..."
+                curl -L -o ${JUNIT_JAR_PATH} ${JUNIT_JAR_URL}
+            '''
         }
     }
+
+    stage('Build') {
+        steps {
+            sh '''
+                echo "[+] Compiling source files..."
+
+                find studentManager/src -name "*.java" > sources.txt
+
+                javac -encoding UTF-8 \
+                      -d ${CLASS_DIR} \
+                      -cp ${JUNIT_JAR_PATH} \
+                      @sources.txt
+            '''
+        }
+    }
+
+    stage('Test') {
+        steps {
+            sh '''
+                echo "[+] Running JUnit tests..."
+
+                java -jar ${JUNIT_JAR_PATH} \
+                    --class-path ${CLASS_DIR} \
+                    --scan-class-path \
+                    --reports-dir ${REPORT_DIR}
+            '''
+        }
+    }
+}
+
+post {
+    always {
+        junit "${REPORT_DIR}/**/*.xml"
+        archiveArtifacts artifacts: "${REPORT_DIR}/**/*", allowEmptyArchive: true
+    }
+
+    success {
+        echo 'All tests passed!'
+    }
+
+    failure {
+        echo 'Build or test failed!'
+    }
+}
+```
+
 }
