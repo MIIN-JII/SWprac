@@ -51,7 +51,10 @@ pipeline {
                 	java -jar ${JUNIT_JAR_PATH} \
                    	 --class-path ${CLASS_DIR} \
                    	 --scan-class-path \
-                    	--reports-dir ${REPORT_DIR}
+                	--details=tree \
+                	--details-theme=ascii \
+                    	--reports-dir ${REPORT_DIR}\
+			> ${REPORT_DIR}/test-output.txt
             	'''
         	}
     	}
