@@ -86,8 +86,9 @@ class StudentManagerTest {
 
      manager.addStudent("홍길동");
      manager.addStudent("이순신");
+     manager.addStudent("김민지");
 
-     assertEquals(2, manager.getStudentCount(),
-             "학생 수가 2명이어야 합니다.");
+     assertEquals(3, manager.getStudentCount(),
+             "학생 수가 3명이어야 합니다.");
  }
 }
