@@ -78,4 +78,16 @@ class StudentManagerTest {
          manager.removeStudent("김민지");
      }, "존재하지 않는 학생 제거 시 IllegalArgumentException이 발생해야 합니다.");
  }
+ 
+ // [5] 학생 수 조회 테스트
+ @Test
+ @Order(5)
+ void testStudentCount() {
+
+     manager.addStudent("홍길동");
+     manager.addStudent("이순신");
+
+     assertEquals(2, manager.getStudentCount(),
+             "학생 수가 2명이어야 합니다.");
+ }
 }
